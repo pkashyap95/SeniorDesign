@@ -13,7 +13,7 @@ print "time.gmtime() : %s" % time.gmtime()
 import csv  
 
 #Please change the file path when working on a different RPi
-csvfile = "/home/pi/Desktop/IMU_data/IMUdata" + str(time.gmtime()) + ".csv"
+csvfile = "/home/pi/Desktop/IMU_data/IMUdata" + ".csv"
 
 # Power management registers
 power_mgmt_1 = 0x6b
