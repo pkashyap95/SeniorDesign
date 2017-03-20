@@ -4,108 +4,152 @@
 #define trigPin 13 // define the pins of your sensor
 #define echoPin 12 
 Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-Adafruit_DCMotor *myMotor1 = AFMS.getMotor(1); // set up motors.
-Adafruit_DCMotor *myMotor2 = AFMS.getMotor(2);
- 
- 
-void setup() {
+Adafruit_DCMotor *myMotor1 = AFMS.getMotor(1); // set up right motor
+Adafruit_DCMotor *myMotor2 = AFMS.getMotor(2); // set up left motor
+
+
+
+void setup(){
   Serial.begin(9600); // begin serial communitication  
   Serial.println("Motor test!");
-   pinMode(trigPin, OUTPUT);// set the trig pin to output (Send sound waves)
+  pinMode(trigPin, OUTPUT);// set the trig pin to output (Send sound waves)
   pinMode(echoPin, INPUT);// set the echo pin to input (recieve sound waves)
   AFMS.begin(); 
-  myMotor1->setSpeed(155); //set the speed of the motors, between 0-255
-  myMotor2->setSpeed(155);  
-  myMotor1->run(FORWARD);
-  myMotor2->run(FORWARD);
-}
- 
+  }
+  
 void loop() {
 
-   long duration, distance; // start the scan
-  digitalWrite(trigPin, LOW);  
+CarMovement(27);
+}
+
+
+int CarMovement(int angle){
+  long duration, STD_distance;
+  digitalWrite(trigPin, LOW);
   delayMicroseconds(2); // delays are required for a succesful sensor operation.
   digitalWrite(trigPin, HIGH);
 
   delayMicroseconds(10); //this delay is required as well!
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
-  distance = (duration/2) / 29.1;// convert the distance to centimeters.
+  STD_distance = (duration/2) / 29.1;// convert the STD_distance to centimeters.
   
-  if (distance <= 90 && distance > 80)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-     Serial.println ("Close Obstacle detected!" );
-     Serial.println ("Speed is now 135");
-     Serial.print ("Distance From Robot is " );
-     Serial.print ( distance);
-     Serial.print ( " CM!");// print out the distance in centimeters.
-     myMotor1->setSpeed(135); 
-     myMotor2->setSpeed(135);
-   }
-   else if (distance <= 80 && distance > 70)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-       Serial.println ("Close Obstacle detected!" );
-       Serial.println ("Speed is now 115");
-       Serial.print ("Distance From Robot is " );
-       Serial.print ( distance);
-       Serial.print ( " CM!");// print out the distance in centimeters.
-       myMotor1->setSpeed(115); 
-       myMotor2->setSpeed(115);
-  }
- else if (distance <= 70 && distance > 60)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-   Serial.println ("Close Obstacle detected!" );
-   Serial.println ("Speed is now 95");
-   Serial.print ("Distance From Robot is " );
-   Serial.print ( distance);
-   Serial.print ( " CM!");// print out the distance in centimeters.
-   myMotor1->setSpeed(95); 
-   myMotor2->setSpeed(95);
-  }
- else if (distance <= 60 && distance > 50)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-   Serial.println ("Close Obstacle detected!" );
-   Serial.println ("Speed is now 70");
-   Serial.print ("Distance From Robot is " );
-   Serial.print ( distance);
-   Serial.print ( " CM!");// print out the distance in centimeters.
-   myMotor1->setSpeed(70); 
-   myMotor2->setSpeed(70);
-  }
+  long A, B, C, D, E;
+  A == (angle <= 10 && angle > -10);          //Straight
+  B == (angle <= 30 && angle > 10);           //Sharp Right Turn
+  C == (angle <= 70 && angle > 30);           //Wide Right Turn
+  D == (angle <= -30 && angle > -10);         //Sharp Left Turn
+  E == (angle <= -70 && angle > -30);         //Wide Left Turn
+   
+switch(angle){
   
- else if (distance <= 50 && distance > 40)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-   Serial.println ("Close Obstacle detected!" );
-   Serial.println ("Speed is now 45");
-   Serial.print ("Distance From Robot is " );
-   Serial.print ( distance);
-   Serial.print ( " CM!");// print out the distance in centimeters.
-   myMotor1->setSpeed(45); 
-   myMotor2->setSpeed(45);
+  case 'B':                                   //10 to 30 degree right turn
+  if(STD_distance <= 90 && STD_distance > 60){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.65); 
+    myMotor2->setSpeed(STD_distance*1.65);
   }
-  
- else if (distance <= 40 && distance > 30)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-   Serial.println ("Close Obstacle detected!" );
-   Serial.println ("Speed is now 20");
-   Serial.print ("Distance From Robot is " );
-   Serial.print ( distance);
-   Serial.print ( " CM!");// print out the distance in centimeters.
-   myMotor1->setSpeed(20); 
-   myMotor2->setSpeed(20);
+  else if(STD_distance <= 60 && STD_distance > 30){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.5); 
+    myMotor2->setSpeed(STD_distance*1.5);
+    }
+  else if(STD_distance <= 30 && STD_distance >= 0){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(0); 
+    myMotor2->setSpeed(0);
+    }
+  else{
+    myMotor1->setSpeed((angle*3)+40); 
+    myMotor2->setSpeed((angle*4.5)+40);
   }
-  
- else if (distance <= 30 && distance >=0)/*if there's an obstacle 25 centimers, ahead, do the following: */ {   
-   Serial.println ("Close Obstacle detected!" );
-   Serial.println ("Speed is now 0");
-   Serial.print ("Distance From Robot is " );
-   Serial.print ( distance);
-   Serial.print ( " CM!");// print out the distance in centimeters.
-   myMotor1->setSpeed(0); 
-   myMotor2->setSpeed(0);
+  break;
+
+  case 'C':                                   //30 to 70 degree right turn
+  if(STD_distance <= 90 && STD_distance > 60){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.65); 
+    myMotor2->setSpeed(STD_distance*1.65);
   }
+  else if(STD_distance <= 60 && STD_distance > 30){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.5); 
+    myMotor2->setSpeed(STD_distance*1.5);
+    }
+  else if(STD_distance <= 30 && STD_distance >= 0){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(0); 
+    myMotor2->setSpeed(0);
+    }
+  else{
+    myMotor1->setSpeed(angle*2); 
+    myMotor2->setSpeed(angle*4.5);
+  }
+  break;
+
+  case 'D':                                   //10 to 30 degree left turn
+  if(STD_distance <= 90 && STD_distance > 60){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.65); 
+    myMotor2->setSpeed(STD_distance*1.65);
+  }
+  else if(STD_distance <= 60 && STD_distance > 30){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.5); 
+    myMotor2->setSpeed(STD_distance*1.5);
+    }
+  else if(STD_distance <= 30 && STD_distance >= 0){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(0); 
+    myMotor2->setSpeed(0);
+    }
+  else{
+    myMotor1->setSpeed((angle*3)+40); 
+    myMotor2->setSpeed((angle*4.5)+40);
+  }
+  break;
+
+  case 'E':                                   //30 to 70 degree left turn
+  if(STD_distance <= 90 && STD_distance > 60){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.65); 
+    myMotor2->setSpeed(STD_distance*1.65);
+  }
+  else if(STD_distance <= 60 && STD_distance > 30){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(STD_distance*1.5); 
+    myMotor2->setSpeed(STD_distance*1.5);
+    }
+  else if(STD_distance <= 30 && STD_distance >= 0){
+    Serial.print("There's an obstacle: " + String(STD_distance) + "away");
+    myMotor1->setSpeed(0); 
+    myMotor2->setSpeed(0);
+    }
+  else{
+    myMotor1->setSpeed(angle*4.5); 
+    myMotor2->setSpeed(angle*2);
+  }
+  break;
   
-  else {
-   Serial.println ("No obstacle detected. going forward");
-   delay (15);
-   myMotor1->setSpeed(155); //set the speed of the motors, between 0-255
-   myMotor2->setSpeed(155);
-   myMotor1->run(BACKWARD); //if there's no obstacle ahead, Go Forward! 
-   myMotor2->run(BACKWARD);  
-   delay(10);
-  }  
-}
+  default :                                    //Straight
+  
+  if(STD_distance <= 90 && STD_distance > 60){
+    myMotor1->setSpeed(STD_distance*1.65); 
+    myMotor2->setSpeed(STD_distance*1.65);
+  }
+  else if(STD_distance <= 60 && STD_distance > 30){
+    myMotor1->setSpeed(STD_distance*1.5); 
+    myMotor2->setSpeed(STD_distance*1.5);
+    }
+  else if(STD_distance <= 30 && STD_distance >= 0){
+    myMotor1->setSpeed(0); 
+    myMotor2->setSpeed(0);
+    }
+  else{
+    myMotor1->setSpeed(155); 
+    myMotor2->setSpeed(155);
+    myMotor1->run(BACKWARD);
+    myMotor2->run(BACKWARD);
+    }
+  }
+ }
