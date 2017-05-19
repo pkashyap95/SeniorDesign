@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from camtracker import Setup
 import smbus
 import math
 import time
@@ -14,7 +15,7 @@ accel_scale = 16384.0
 
 address = 0x68  # This is the address value read via the i2cdetect command
 
-bluetoothSerial = serial.Serial( "/dev/rfcomm1", baudrate=9600 )
+#bluetoothSerial = serial.Serial( "/dev/rfcomm1", baudrate=9600 )
 
 def leftTurn(gyro_total_y):
     angle=-(gyro_total_y)
@@ -57,7 +58,6 @@ def dist(a, b):
 def get_y_rotation(x,y,z):
     radians = math.atan2(x, dist(y,z))
     return -math.degrees(radians)
-
 def get_x_rotation(x,y,z):
     radians = math.atan2(y, dist(x,z))
     return math.degrees(radians)
@@ -66,6 +66,8 @@ bus = smbus.SMBus(1)  # or bus = smbus.SMBus(1) for Revision 2 boards
 
 # Now wake the 6050 up as it starts in sleep mode
 bus.write_byte_data(address, power_mgmt_1, 0)
+
+setup=tracker=setup.start()
 
 now = time.time()
 
@@ -107,17 +109,6 @@ while count==1:
     last_x = K * (last_x + gyro_x_delta) + (K1 * rotation_x)
     last_y = K * (last_y + gyro_y_delta) + (K1 * rotation_y)
     sample=sample+1
-    if(sample%145==0):
-        if(gyro_total_y<-10):
-            leftAngle=leftTurn(gyro_total_y)
-            bluetoothSerial.write(1000+leftAngle)
-            time.delay(5)
-
-        elif(gyro_total_y>10):
-            rightAngle=rightTurn(gyro_total_y)
-            bluetoothSerial.write(3000+rightAngle)
-            time.delay(5)
-
-        else:
-           bluetoothSerial.write(2001)
-           time.delay(5)
+    
+    print "{0:.4f} {1:.2f} {2:.2f} {3:.2f} {4:.2f} {5:.2f} {6:.2f} {7:d}".format( time.time() - now, (rotation_x), (gyro_total_x), (last_x), (rotation_y), (gyro_total_y), (last_y), (sample))
+    #print gyro_scaled_z

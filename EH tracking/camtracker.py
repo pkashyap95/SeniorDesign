@@ -2,8 +2,14 @@
 DEBUG = False
 # # # # #
 # imports
+from comp2 import IMU_Reader
 import csv
 import os.path
+import smbus
+import math
+import time
+import csv
+import serial
 
 
 # Try to import VideoCapture Library
@@ -50,7 +56,7 @@ class Setup:
 		
 		"""Initializes a Setup instance
 		"""
-		
+		self.trial=IMU_Reader()
 		# DEBUG #
 		if DEBUG:
 			self.savefile = open('data/savefile.txt','w')
@@ -77,7 +83,7 @@ class Setup:
 			else:
 				device = available[0]
 		
-		# create new camera
+		# create new cameraTracker
 		self.tracker = CamEyeTracker(device=device, camres=camres)
 		
 		# find font: first look in directory, if that fails we fall back to default
@@ -144,12 +150,11 @@ class Setup:
 		
 		# start setup (should return a CamEyeTracker instance)
 		tracker = self.run_GUI()
-		
+
+		self.trial.intialRead()
 		return tracker
 		
-	
-	
-	
+
 	def setup_GUI(self):
 		
 		"""Sets up a GUI interface within a PyGame Surface
@@ -269,15 +274,15 @@ class Setup:
 		
 		# general
 		stage = 1 # stage is updated by handle_input functions
-		
+	
 		# stage specific
 		stagevars = {}
 		
-                stagevars[0] = {}
+	        stagevars[0] = {}
 		stagevars[0]['show_threshimg'] = False # False for showing snapshots, True for showing thresholded snapshots
 		stagevars[0]['use_prect'] = True # False for no pupil search limits, True for pupul rect
 		
-                stagevars[1] = {}
+        	stagevars[1] = {}
 		stagevars[1]['thresholdchange'] = None # None, 'up', or 'down'
 		
 		stagevars[2] = {}
@@ -299,7 +304,7 @@ class Setup:
 			
 			# # # # #
 			# general
-			
+                        self.trial.startReading()
 			# draw stage
 			self.draw_stage(stagenr=stage)
 			
@@ -348,8 +353,8 @@ class Setup:
 			
 
 				# draw pupil rect
-				pygame.draw.rect(self.img, (0,0,255), self.settings['pupilrect'], 2)
-				pygame.draw.rect(self.thresholded, (0,0,255), self.settings['pupilrect'], 2)
+				#pygame.draw.rect(self.img, (0,0,255), self.settings['pupilrect'], 2)
+				#pygame.draw.rect(self.thresholded, (0,0,255), self.settings['pupilrect'], 2
 	
 				# draw pupil center and pupilbounds in image
 				try: pygame.draw.rect(self.img, (0,255,0),pupilbounds,1); pygame.draw.rect(self.thresholded, (0,255,0),pupilbounds,1)
@@ -368,8 +373,30 @@ class Setup:
 			# draw values
 			starty = self.dispsize[1]/2 - imgsize[1]/2
 			vtx = self.dispsize[0]/2 - imgsize[0]/2 - 10 # 10 isa
-			vals = ['threshold', str(self.settings['threshold']), 'pupil position', str(self.settings['pupilpos']), 'pupil rect', str(self.settings['pupilrect'])]
+			vals = ['threshold', str(self.settings['threshold']), 'pupil position', str(self.settings['pupilpos']), 'pupil rect', str(self.settings['pupilrect']), 'IMU Data']
+                        IMURead= self.trial.startReading()
+
                         
+                        print "{0:.4f} {1:.4f} {2:.0f}, {3:.2f}".format(IMURead[5]*5, IMURead[7]*5,self.settings['pupilpos'][0], IMURead[8]) 
+			if self.settings['pupilpos'][0] >360 and IMURead[5]*5< -15:
+
+				self.trial.leftTurn(IMURead[5]*5)
+				
+
+			elif self.settings['pupilpos'][0] <200 and IMURead[5]*5> 15:
+				self.trial.rightTurn(IMURead[5]*5)
+
+			elif IMURead[8]>3:
+				self.trial.backward(IMURead[8]*5)
+			
+			#elif (IMURead[5]*5< 15 and IMURead[5]*5> -115) and (self.settings['pupilpos'][0] >200 and self.settings['pupilpos'][0] <360) :
+                        elif (IMURead[5]*5 > -5 and IMURead[5] <5) and IMURead[7]*5< -30:
+				self.trial.goStraight()				
+                        
+                        #elif (IMURead[5]*5 > -5 and IMURead[5]*5<5) and IMURead[7]*5> 30:
+			#	self.trial.goBack()	
+
+
 			for i in range(len(vals)):
 				# draw title
 				tsize = self.sfont.size(vals[i])
@@ -538,7 +565,7 @@ class CamEyeTracker:
 
 		# default settings
 		self.settings = {'pupilcol':(0,0,0), \
-					'threshold':96, \
+					'threshold':60, \
 					'nonthresholdcol':(100,100,255,255), \
 					'pupilpos':(-1,-1), \
 					'pupilrect':pygame.Rect(self.camres[0]/2-50,self.camres[1]/2-25,100,50), \
