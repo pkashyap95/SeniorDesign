@@ -1,4 +1,4 @@
-Senior Design: Green Team
+#Senior Design: Green Team
 
 ---
 
@@ -9,12 +9,9 @@ A camera mounted on the car will stream video to a computer and display what the
 Gestures made with the eye are implemented in order to commit specific actions such as controlling the streaming of the data of the head and eye movements.
 
 System Interaction: 
+![alt text](https://raw.githubusercontent.com/pkashyap95/psychic-waddle/master/src/images/Senior%20Design%20Part%20Interaction.png "Logo Title Text 1")
 
-
-
-
-
-Hardware
+###Hardware
 
   Hardware         	Cost  	Link                  
   RaspberryPi 3    	$35   	http://bit.ly/1OJ7yN2 
@@ -24,13 +21,13 @@ Hardware
   ArduCam          	$14.99	http://amzn.to/2qCsfrB
   MPU 6050         	$5.75 	http://amzn.to/2qzhBE1
 
-EH Tracking
+###EH Tracking
 
 We made use of PyGaze - the open-source toolbox for eye tracking to perform the eye tracking component of our system. The flow chart below explains the exact working of the eye tracking algorithm that we implemented. In addition, to the eye tracking we used an MPU 6050 to perform head tracking (determining the head position).  Comp2.py is the class that actually gets data from the MPU 6050. An instance of the class is created in camtracker.py. 
 
 To run all the above use python 2.7.
 
-Arduino Car Code
+###Arduino Car Code
 
 The snippet below is essential for Arduino to receive data from the head set. It only receives data when there is 4 bytes available and stores them in order incomingByte0 onwards. It then changes the speed according to values received to execute the various scenarios. 
 
